@@ -17,7 +17,7 @@ export interface ConsultationPricing {
   phonePrice: number;
   videoPrice: number;
   phonePercentage: number; // درصد قیمت تلفنی نسبت به حضوری
-  videoPercentage: number; // درصد قیمت تصویری نسبت به حضوری
+  videoPercentage: number; // درصد قیمت تماس ویدئویینسبت به حضوری
   isActive: boolean;
 }
 
@@ -40,6 +40,7 @@ export interface WeeklyTemplate {
 
 export interface LawyerList {
   id: string;
+  username:string;
   name: string;
   lastName: string;
   specialty: string;
@@ -168,6 +169,7 @@ export interface Transaction {
 
 export interface UserProfile {
   id: string;
+  username:string;
   name: string;
   lastName: string;
   mobile: string;

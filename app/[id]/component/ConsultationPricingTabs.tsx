@@ -22,7 +22,7 @@ export default function ConsultationPricingTabs({ lawyer, onConsultationRequest 
     const consultationTypes = [
         { id: 'in-person', name: 'حضوری', icon: User, color: 'bg-blue-100 text-blue-800' },
         { id: 'phone', name: 'تلفنی', icon: Phone, color: 'bg-green-100 text-green-800' },
-        { id: 'video', name: 'تصویری', icon: Video, color: 'bg-purple-100 text-purple-800' }
+        { id: 'video', name: 'تماس ویدئویی', icon: Video, color: 'bg-purple-100 text-purple-800' }
     ];
 
     // تابع برای دریافت قیمت بر اساس نوع مشاوره

@@ -14,7 +14,7 @@ import { useAuth } from '@/lib/api/useApi';
 const consultationTypes = [
     { id: 'in-person', name: 'حضوری', description: 'مشاوره حضوری در دفتر وکیل', icon: User },
     { id: 'phone', name: 'تلفنی', description: 'مشاوره تلفنی', icon: Phone },
-    { id: 'video', name: 'تصویری', description: 'مشاوره تصویری در واتساپ', icon: Video }
+    { id: 'video', name: 'تماس ویدئویی', description: 'مشاوره تماس ویدئوییدر واتساپ', icon: Video }
 ];
 
 const pricingOptions = [
@@ -145,7 +145,7 @@ export default function ConsultationPricingManager() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium flex items-center gap-2">
                                 <Video className="w-4 h-4" />
-                                درصد قیمت مشاوره تصویری
+                                درصد قیمت مشاوره تماس ویدئویی
                             </label>
                             <div className="flex items-center gap-2">
                                 <Input

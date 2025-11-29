@@ -27,7 +27,7 @@ interface ConsultationOption {
 const consultationTypes = [
     { id: 'in-person', name: 'حضوری', icon: User, color: 'bg-blue-100 text-blue-800' },
     { id: 'phone', name: 'تلفنی', icon: Phone, color: 'bg-green-100 text-green-800' },
-    { id: 'video', name: 'تصویری', icon: Video, color: 'bg-purple-100 text-purple-800' }
+    { id: 'video', name: 'تماس ویدئویی', icon: Video, color: 'bg-purple-100 text-purple-800' }
 ];
 
 export default function ConsultationOptionsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -60,6 +60,26 @@ export default function ConsultationOptionsPage({ params }: { params: Promise<{ 
             setSelectedOption(consultationOptions[0]);
         }
     }, [consultationOptions, selectedOption]);
+
+    // به‌روزرسانی گزینه انتخاب شده هنگام تغییر نوع مشاوره
+    useEffect(() => {
+        if (consultationOptions.length > 0) {
+            // اگر گزینه انتخاب شده وجود ندارد یا برای نوع مشاوره فعلی نیست، گزینه پیش‌فرض را انتخاب کن
+            if (!selectedOption || !isOptionForCurrentType(selectedOption, selectedType)) {
+                setSelectedOption(consultationOptions[0]);
+                // اگر سوئیپر وجود دارد، به اولین اسلاید برو
+                if (swiperRef.current) {
+                    swiperRef.current.slideTo(0);
+                }
+            }
+        }
+    }, [selectedType, consultationOptions]);
+
+    // تابع کمکی برای بررسی اینکه آیا گزینه برای نوع مشاوره فعلی است
+    const isOptionForCurrentType = (option: ConsultationOption, type: string) => {
+        // در اینجا می‌توانیم منطق پیچیده‌تری اضافه کنیم اگر نیاز باشد
+        return true; // در حال حاضر همه گزینه‌ها برای همه انواع مشاوره معتبر هستند
+    };
 
     const handleNext = () => {
         if (!selectedOption) {
@@ -94,6 +114,21 @@ export default function ConsultationOptionsPage({ params }: { params: Promise<{ 
         setSelectedOption(option);
         if (swiperRef.current) {
             swiperRef.current.slideTo(index);
+        }
+    };
+
+    // مدیریت تغییر تب
+    const handleTabChange = (value: string) => {
+        const newType = value as 'in-person' | 'phone' | 'video';
+        setSelectedType(newType);
+
+        // تنظیم گزینه پیش‌فرض برای تب جدید
+        if (consultationOptions.length > 0) {
+            setSelectedOption(consultationOptions[0]);
+            // اگر سوئیپر وجود دارد، به اولین اسلاید برو
+            if (swiperRef.current) {
+                swiperRef.current.slideTo(0);
+            }
         }
     };
 
@@ -183,17 +218,16 @@ export default function ConsultationOptionsPage({ params }: { params: Promise<{ 
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <Tabs defaultValue="in-person" className="w-full">
+                                <Tabs defaultValue="in-person" className="w-full" onValueChange={handleTabChange}>
                                     <TabsList className="grid grid-cols-3 w-full mb-4">
                                         {consultationTypes.map(type => (
                                             <TabsTrigger
                                                 key={type.id}
                                                 value={type.id}
                                                 className="flex items-center gap-1 text-xs"
-                                                onClick={() => setSelectedType(type.id as 'in-person' | 'phone' | 'video')}
                                             >
-                                                <type.icon className="w-4 h-4" />
                                                 {type.name}
+                                                <type.icon className="w-4 h-4"/>
                                             </TabsTrigger>
                                         ))}
                                     </TabsList>
@@ -220,7 +254,6 @@ export default function ConsultationOptionsPage({ params }: { params: Promise<{ 
                                                             <div
                                                                 onClick={() => {
                                                                     setSelectedOption(option);
-                                                                    setSelectedType(type.id as 'in-person' | 'phone' | 'video');
                                                                     if (swiperRef.current) {
                                                                         swiperRef.current.slideTo(index);
                                                                     }
@@ -285,8 +318,8 @@ export default function ConsultationOptionsPage({ params }: { params: Promise<{ 
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">هزینه</span>
                                         <span className="font-bold text-lg">
-                                            {selectedType === 'in-person' ? selectedOption.inPersonPrice :
-                                                selectedType === 'phone' ? selectedOption.phonePrice :
+                                            {selectedType === 'in-person' ? selectedOption.inPersonPrice.toLocaleString() :
+                                                selectedType === 'phone' ? selectedOption.phonePrice.toLocaleString() :
                                                     selectedOption.videoPrice.toLocaleString()} تومان
                                         </span>
                                     </div>

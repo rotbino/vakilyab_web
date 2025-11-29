@@ -145,6 +145,15 @@ export const useLawyer = (id: string) => {
     });
 };
 
+export const useLawyerByUserName = (username: string) => {
+    return useQuery({
+        queryKey: ['lawyer', username],
+        queryFn: () => mockApi.lawyers.getByUsername(username),
+        enabled: !!username,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+};
+
 export const useSearchLawyers = (searchTerm: string) => {
     return useQuery({
         queryKey: ['lawyers', 'search', searchTerm],

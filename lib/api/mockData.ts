@@ -54,6 +54,7 @@ export const clearAndInitializeLocalStorage = () => {
 export const lawyersData: LawyerList[] = [
     {
         id: "1",
+        username:"ahmad",
         isOnline: true,
         name: "احمد",
         lastName: "محمدی",
@@ -82,6 +83,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "2",
+        username:"sara",
         isOnline: true,
         name: "سارا",
         lastName: "رضایی",
@@ -110,6 +112,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "3",
+        username:"reza",
         isOnline: true,
         name: "رضا",
         lastName: "حسینی",
@@ -138,6 +141,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "4",
+        username:"maryam",
         isOnline: false,
         name: "مریم",
         lastName: "اکبری",
@@ -157,6 +161,7 @@ export const lawyersData: LawyerList[] = [
     {
         id: "5",
         isOnline: false,
+        username:"ali",
         name: "علی",
         lastName: "صالحی",
         specialty: "حقوقی",
@@ -174,6 +179,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "6",
+        username:"zahra",
         isOnline: false,
         name: "زهرا",
         lastName: "موسوی",
@@ -193,6 +199,7 @@ export const lawyersData: LawyerList[] = [
     // وکلای جدید تهران
     {
         id: "7",
+        username:"mohamad",
         isOnline: false,
         name: "محمد",
         lastName: "کریمی",
@@ -211,6 +218,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "8",
+        username:"fateme",
         isOnline: false,
         name: "فاطمه",
         lastName: "حسینی",
@@ -229,6 +237,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "9",
+        username:"hosein",
         isOnline: false,
         name: "حسین",
         lastName: "صادقی",
@@ -247,6 +256,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "10",
+        username:"zeynab",
         isOnline: false,
         name: "زینب",
         lastName: "میرزایی",
@@ -265,6 +275,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "11",
+        username:"mahdi",
         isOnline: false,
         name: "مهدی",
         lastName: "احمدی",
@@ -283,6 +294,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "12",
+        username:"narges",
         isOnline: false,
         name: "سیده نرگس",
         lastName: "موسوی",
@@ -347,6 +359,7 @@ lawyersData.forEach(lawyer => {
 export const usersData: UserProfile[] = [
     {
         id: "user1",
+        username:"ali",
         name: "علی",
         lastName: "احمدی",
         mobile: "09116421264",
@@ -441,6 +454,7 @@ export const usersData: UserProfile[] = [
     {
         id: "lawyer1",
         name: "احمد",
+        username:"ahmad",
         lastName: "محمدی",
         mobile: "09196421264",
         phone: "02112345678",
@@ -592,6 +606,7 @@ export const usersData: UserProfile[] = [
     {
         id: "lawyer2",
         name: "سارا",
+        username:"sara",
         lastName: "رضایی",
         mobile: "09189001937",
         phone: "03112345678",

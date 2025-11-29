@@ -86,7 +86,7 @@ export default function ConsultationInvoicePage({ params }: { params: Promise<{ 
         switch (type) {
             case 'in-person': return 'حضوری';
             case 'phone': return 'تلفنی';
-            case 'video': return 'تصویری';
+            case 'video': return 'تماس ویدئویی';
             default: return type;
         }
     };

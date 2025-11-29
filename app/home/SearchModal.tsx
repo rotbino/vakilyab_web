@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/r
 import { Input } from "@/components/radix/input";
 import { Button } from "@/components/radix/button";
 import { LawyerList, lawyersData } from "@/lib/api/mockData";
-import LawyerCard from "@/app/home/LawyerCard";
+import LawyerCard from "@/app/lawyers/LawyerCard";
 
 
 interface SearchModalProps {

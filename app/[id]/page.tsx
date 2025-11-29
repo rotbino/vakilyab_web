@@ -26,8 +26,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LawyerList } from '@/lib/api/types';
 import TimeSlotSelector from '@/app/lawyer-dashboard/TimeSlotSelector';
-import {useLawyer, useReviews, useQAPairs} from "@/lib/api/useApi";
-import {useTimeSlots} from "@/lib/api/useApi";
+import {useLawyer, useReviews, useQAPairs, useLawyerByUserName, useTimeSlots} from "@/lib/api/useApi";
 import {useAuth} from "@/lib/api/useApi";
 import ReviewsSection from "@/app/[id]/component/ReviewsSection";
 import QandASection from "@/app/[id]/component/QandASection";
@@ -35,7 +34,6 @@ import DirectQuestionSection from "@/app/[id]/component/DirectQuestionSection";
 import ConsultationPricingTabs from "@/app/[id]/component/ConsultationPricingTabs";
 
 // کامپوننت‌های جدید
-
 
 interface LawyerDetailPageProps {
     params: Promise<{ id: string }>;
@@ -76,10 +74,15 @@ const consultationOptions = [
 export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
     const { id } = React.use(params);
     const router = useRouter();
-    const { data: lawyer, isLoading, error } = useLawyer(id);
-    const { data: timeSlots, refetch } = useTimeSlots(id);
-    const { data: reviews } = useReviews(id);
-    const { data: qaPairs } = useQAPairs(id);
+
+    // ابتدا وکیل را بر اساس username دریافت می‌کنیم
+    const { data: lawyer, isLoading, error } = useLawyerByUserName(id);
+
+    // حالا سایر هوک‌ها را فراخوانی می‌کنیم
+    const lawyerId = lawyer?.id || '';
+    const { data: timeSlots, refetch } = useTimeSlots(lawyerId);
+    const { data: reviews } = useReviews(lawyerId);
+    const { data: qaPairs } = useQAPairs(lawyerId);
     const { user, isAuthenticated } = useAuth();
 
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -94,8 +97,10 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
         new Date(lawyer.subscription.expiryDate) > new Date() : false;
 
     useEffect(() => {
-        refetch();
-    }, [id, refetch]);
+        if (lawyerId) {
+            refetch();
+        }
+    }, [lawyerId, refetch]);
 
     const toggleService = (serviceId: string) => {
         if (selectedServices.includes(serviceId)) {
@@ -132,7 +137,7 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
             return;
         }
 
-        router.push(`/${lawyer?.id}/consultation-options`);
+        router.push(`/${lawyer?.username}/consultation-options`);
     };
 
     // تابع برای رندر کردن نوار تاج‌ها
@@ -203,7 +208,6 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                     <div className="relative h-64 bg-gradient-to-r from-red-800 to-red-600">
                         <div className="absolute inset-0 bg-black opacity-20"></div>
 
-                        {/* Back Button - روی عکس */}
                         {/* Back Button - روی عکس */}
                         <Link href="/" className="absolute top-4 left-4 z-10">
                             <Button
@@ -426,7 +430,6 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                     {/* Sidebar */}
                     <div className="space-y-6">
                         {/* Stats Card */}
-                        {/* Stats Card */}
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -479,7 +482,6 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                         </Card>
 
 
-                        {/* Consultation Card - برای دسکتاپ */}
                         {/* Consultation Card - برای دسکتاپ */}
                         <Card className="hidden lg:block">
                             <ConsultationPricingTabs

@@ -1,228 +1,191 @@
-// lib/api/client.ts
 "use client";
 
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { ApiError } from "@/lib/api/apiError";
 import { store } from "@/lib/store/store";
-import {setAccessToken, setSessionExpired, setSessionId} from "@/lib/store/slices/authSlice";
-import { generateRefreshToken } from "@/lib/utils/utils";
+import { setAccessToken, setSessionExpired } from "@/lib/store/slices/authSlice";
 
-import { authApi } from "@/lib/api/auth";
-
-export const API_BASE = "https://staging.cytechnology.ir/GoldPay/V0100101";
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3011/";
 
 // متغیر توکن سریع
 let authToken: string | null = null;
-let authSessionId: string | null = null;
+
 // ست کردن توکن در متغیر و redux persist
 export const setAuthToken = (token: string | null) => {
     if (token) {
         authToken = token;
-        store.dispatch(setAccessToken({ accessToken: token }));
+        store.dispatch(setAccessToken(token));
     }
 };
-export const setAuthSessionId = (sessionId: string | null) => {
-    if (sessionId) {
-        authSessionId = sessionId;
-        store.dispatch(setSessionId({ sessionId: sessionId }));
-    }
-};
-
 
 export const getAuthToken = (): string | null => {
     authToken = authToken || store.getState().auth.accessToken;
     return authToken;
 };
 
-export const getAuthSessionId = () => {
-    authSessionId=authSessionId ||  store.getState().auth.sessionId;
-    if(!authSessionId) {
-        window.location.href = "/login";
-    }
-    return authSessionId;
-};
-
 // axios instance
 const api = axios.create({
     baseURL: API_BASE,
     headers: { "Content-Type": "application/json" },
+    withCredentials: true, // ✅ این خط حیاتی را اضافه کنید
 });
 
-// متد عمومی برای درخواست‌های بدون نیاز به توکن و بررسی خطا
+// تابع کمکی برای استخراج خطا از پاسخ سرور
+const extractError = (error: any): ApiError => {
+    // اگر خطا از نوع ApiError باشد، همان را برگردان
+    if (error instanceof ApiError) {
+        return error;
+    }
+
+    // خطاهای شبکه (عدم پاسخ از سرور)
+    if (typeof error.code === "string") {
+        switch (error.code) {
+            case "ERR_NETWORK":
+                return new ApiError(1001, "خطای شبکه یا عدم پاسخ از سرور");
+            case "ECONNABORTED":
+                return new ApiError(1002, "مهلت درخواست تمام شد (Timeout)");
+            case "ERR_BAD_REQUEST":
+                return new ApiError(400, "درخواست غیرمعتبر (Bad Request)");
+            case "ERR_BAD_RESPONSE":
+                return new ApiError(500, "پاسخ نامعتبر از سرور");
+            case "ERR_CANCELED":
+                return new ApiError(1003, "درخواست توسط کاربر یا کد لغو شد");
+            default:
+                return new ApiError(9999, `خطای کلاینت: ${error.code}`);
+        }
+    }
+
+    // اگر سرور پاسخ داده
+    if (error.response) {
+        const status = error.response.status;
+        const data = error.response.data;
+
+        // مدیریت خطاهای NestJS با ساختار استاندارد
+        if (data && typeof data === 'object' && data.statusCode && data.message) {
+            // اگر خطای 401 یا 403 بود، جلسه را منقضی کن
+            if (data.statusCode === 401 || data.statusCode === 403) {
+                store.dispatch(setSessionExpired(true));
+            }
+
+            // اگر message آرایه است، آن را به صورت رشته ترکیب کن
+            let message = data.message;
+            if (Array.isArray(data.message)) {
+                message = data.message.join(', ');
+            }
+
+            // حفظ تمام اطلاعات خطا از سمت سرور
+            return new ApiError(data.statusCode, message, {
+                ...data,
+                originalMessage: data.message // پیام اصلی را هم نگه می‌داریم
+            });
+        }
+
+        // خطاهای HTTP استاندارد بدون ساختار NestJS
+        if (status) {
+            // اگر پاسخ دارای message است، از آن استفاده کن
+            let message = data?.message || error.message || "خطای سرور";
+
+            // اگر خطای 401 یا 403 بود، جلسه را منقضی کن
+            if (status === 401 || status === 403) {
+                store.dispatch(setSessionExpired(true));
+            }
+
+            return new ApiError(status, message, data);
+        }
+
+        // اگر هیچ‌کدام از موارد بالا نبود، از وضعیت HTTP استفاده کن
+        return new ApiError(status || 0, error.message || "خطای نامعلوم", data);
+    }
+
+    // خطای ناشناخته
+    return new ApiError(0, error.message || "خطای نامعلوم");
+};
+
+// متد عمومی برای درخواست‌های بدون نیاز به توکن
 export const publicApiRequest = async <T = any>(
     url: string,
     options?: AxiosRequestConfig
 ): Promise<T> => {
-    console.log( API_BASE+url);
     try {
         const response: AxiosResponse<T> = await api({ url, ...options });
-        const data = response.data;
-        console.log(data);
-        if ((data as any).response) {
-            const resp = (data as any).response;
-            if (resp.responseCode === 0) {
-                const { response, ...rest } = data;
-                return rest as T;
-            }else if (resp.responseCode === 1) {
-                store.dispatch(setSessionExpired(true));
-            }
-            else throw new ApiError(resp.responseCode, resp.responseText || "خطای ناشناخته", resp.responseData);
-        }
-
-        return data;
+        return response.data;
     } catch (err: any) {
         console.error("Public API Error:", err);
-        // اگر قبلاً ApiError باشه
-        if (err instanceof ApiError) throw err;
-
-        // خطاهای سطح کلاینت (Axios / Browser string codes)
-        if (typeof err.code === "string") {
-            switch (err.code) {
-                case "ERR_NETWORK":
-                    throw new ApiError(0, "خطای شبکه یا عدم پاسخ از سرور");
-                case "ECONNABORTED":
-                    throw new ApiError(0, "مهلت درخواست تمام شد (Timeout)");
-                case "ERR_BAD_REQUEST":
-                    throw new ApiError(0, "درخواست غیرمعتبر (Bad Request)");
-                case "ERR_BAD_RESPONSE":
-                    throw new ApiError(0, "پاسخ نامعتبر از سرور");
-                case "ERR_CANCELED":
-                    throw new ApiError(0, "درخواست توسط کاربر یا کد لغو شد");
-                case "ERR_FR_TOO_MANY_REDIRECTS":
-                    throw new ApiError(0, "تعداد ریدایرکت‌ها بیش از حد مجاز");
-                default:
-                    throw new ApiError(0, `خطای کلاینت: ${err.code}`);
-            }
-        }
-
-        // اگر سرور پاسخ داده (HTTP status)
-        if (err.response) {
-            const backendCode = err.response.data?.responseCode;
-            if (backendCode !== undefined) {
-                throw new ApiError(
-                    backendCode,
-                    err.response.data?.responseText || "خطای API",
-                    err.response.data?.responseData
-                );
-            }
-            // استفاده از HTTP status اگر responseCode نبود
-            throw new ApiError(err.response.status, err.message, err.response.data);
-        }
-
-        // خطای ناشناخته
-        throw new ApiError(0, err.message || "خطای نامعلوم");
+        const extractErr = extractError(err);
+        console.error("extractErr:", extractErr);
+        throw extractErr;
     }
 };
 
-// متد اصلی برای درخواست‌ها با توکن و مدیریت 401 و 403
+// متد اصلی برای درخواست‌ها با توکن
 export const apiRequest = async <T = any>(
     url: string,
-    options?: AxiosRequestConfig & { needSessionId?: boolean }
+    options?: AxiosRequestConfig
 ): Promise<T> => {
     try {
-        console.log( API_BASE+url);
         options = options || {};
         options.headers = options.headers || {};
-        const needSessionId = options.needSessionId !== false; // پیشفرض true
-        let token =getAuthToken();
+
+        // دریافت توکن
+        const token = getAuthToken();
+        // اگر توکن وجود نداشت، خطا بده
         if (!token) {
-            const refreshToken = await generateRefreshToken();
-            const token = await authApi.getToken(refreshToken);
-            setAuthToken(token.toString());
+            throw new ApiError(401, "توکن احراز هویت وجود ندارد");
         }
+
+        // افزودن توکن به هدر
         options.headers.Authorization = `Bearer ${token}`;
 
-
-        // اضافه کردن sessionId به بادی یا پارامترها
-        if (needSessionId!==false ) {
-            const sessionId=getAuthSessionId();
-            if (options.data) {
-                options.data = { ...options.data, sessionId };
-            } else {
-                options.data = { sessionId};
-            }
-        }
-
-
-        let response: AxiosResponse<T>;
-        try {
-            response = await api({ url, ...options });
-            console.log(response?.data);
-        } catch (err: any) {
-            const status = err.response?.status;
-            if (status === 406 ||status === 401 || status === 403) {
-                const refreshToken = await generateRefreshToken();
-                const newToken = await authApi.getToken(refreshToken);
-                setAuthToken(newToken.toString());
-
-                options.headers.Authorization = `Bearer ${authToken}`;
-                response = await api({ url, ...options });
-            } else {
-                throw new ApiError(status || 0, err.message || "خطای نامعلوم");
-            }
-        }
-
-        const data = response.data;
-
-        if ((data as any).response) {
-            const resp = (data as any).response;
-            if (resp.responseCode === 0){
-                const {response, ...rest } = data;
-                return rest as T;
-            }else if (resp.responseCode === 1) {
-                store.dispatch(setSessionExpired(true));
-            }else if (resp.responseCode === 134444) {// معمولا لیست یا آبجکت خالی
-                return null
-            }
-            throw new ApiError(resp.responseCode, resp.responseText || "خطای ناشناخته", resp.responseData);
-        }
-
-        return data;
+        const response: AxiosResponse<T> = await api({ url, ...options });
+        return response.data;
     } catch (err: any) {
         console.error("API Error:", err);
-        // اگر قبلاً ApiError باشه
-        if (err instanceof ApiError) {
-            throw err
-        };
-
-        // خطاهای سطح کلاینت (Axios / Browser string codes)
-        if (typeof err.code === "string") {
-            switch (err.code) {
-                case "ERR_NETWORK":
-                    throw new ApiError(0, "خطای شبکه یا عدم پاسخ از سرور");
-                case "ECONNABORTED":
-                    throw new ApiError(0, "مهلت درخواست تمام شد (Timeout)");
-                case "ERR_BAD_REQUEST":
-                    throw new ApiError(0, "درخواست غیرمعتبر (Bad Request)");
-                case "ERR_BAD_RESPONSE":
-                    throw new ApiError(0, "پاسخ نامعتبر از سرور");
-                case "ERR_CANCELED":
-                    throw new ApiError(0, "درخواست توسط کاربر یا کد لغو شد");
-                case "ERR_FR_TOO_MANY_REDIRECTS":
-                    throw new ApiError(0, "تعداد ریدایرکت‌ها بیش از حد مجاز");
-                default:
-                    throw new ApiError(0, `خطای کلاینت: ${err.code}`);
-            }
-        }
-
-        // اگر سرور پاسخ داده (HTTP status)
-        if (err.response) {
-            const backendCode = err.response.data?.responseCode;
-            if (backendCode !== undefined) {
-                throw new ApiError(
-                    backendCode,
-                    err.response.data?.responseText || "خطای API",
-                    err.response.data?.responseData
-                );
-            }
-            // استفاده از HTTP status اگر responseCode نبود
-            throw new ApiError(err.response.status, err.message, err.response.data);
-        }
-
-        // خطای ناشناخته
-        throw new ApiError(0, err.message || "خطای نامعلوم");
+        throw extractError(err);
     }
 };
 
+// در فایل apiRequest.ts
+export const apiFileRequest = async <T = any>(
+    url: string,
+    formData: FormData,
+    config?: AxiosRequestConfig // اضافه کردن تنظیمات اختیاری Axios
+): Promise<T> => {
+    const token = getAuthToken();
+    if (!token) {
+        throw new ApiError(401, "توکن احراز هویت وجود ندارد");
+    }
+
+    let fullUrl = `${API_BASE}${url.slice(1)}`;
+
+    console.log('Uploading to URL:', fullUrl); // برای دیباگ
+
+    // اگر تنظیمات Axios ارائه شده باشد، از آن استفاده کن
+    if (config) {
+        // افزودن توکن به هدر
+        config.headers = {
+            ...config.headers,
+            'Authorization': `Bearer ${token}`,
+        };
+        console.log(formData);
+        const response = await axios.post(fullUrl, formData, config);
+        return response.data;
+    } else {
+        // روش قبلی برای سازگاری با کدهای موجود
+        const response = await fetch(fullUrl, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new ApiError(response.status, errorData.message || 'Upload failed');
+        }
+
+        return await response.json();
+    }
+};
 
 export default api;

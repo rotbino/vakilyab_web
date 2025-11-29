@@ -1,12 +1,15 @@
 // lib/store/slices/authSlice.ts
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { UserProfile } from '@/lib/types';
+import {UserProfile} from "@/lib/api/types";
+
 
 interface AuthState {
     user: UserProfile | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    accessToken: string | null;
+    sessionExpired: boolean;
     _persist?: any;
 }
 
@@ -14,6 +17,8 @@ const initialState: AuthState = {
     user: null,
     isAuthenticated: false,
     isLoading: false,
+    accessToken: null,
+    sessionExpired: false,
 };
 
 const authSlice = createSlice({
@@ -29,6 +34,8 @@ const authSlice = createSlice({
             state.user = null;
             state.isAuthenticated = false;
             state.isLoading = false;
+            state.accessToken = null;
+            state.sessionExpired = false;
         },
         setLoading: (state, action: PayloadAction<boolean>) => {
             state.isLoading = action.payload;
@@ -51,11 +58,28 @@ const authSlice = createSlice({
                 };
             }
         },
+        // اضافه اکشن برای تنظیم توکن دسترسی
+        setAccessToken: (state, action: PayloadAction<string | null>) => {
+            state.accessToken = action.payload;
+        },
+        // اضافه اکشن برای تنظیم وضعیت انقضای جلسه
+        setSessionExpired: (state, action: PayloadAction<boolean>) => {
+            state.sessionExpired = action.payload;
+        },
         resetPersist: (state) => {
             state._persist = undefined;
         }
     },
 });
 
-export const { setUser, logout, setLoading, updateTimeSlots, updateWeeklyTemplate, resetPersist } = authSlice.actions;
+export const {
+    setUser,
+    logout,
+    setLoading,
+    updateTimeSlots,
+    updateWeeklyTemplate,
+    resetPersist,
+    setAccessToken,
+    setSessionExpired
+} = authSlice.actions;
 export default authSlice.reducer;

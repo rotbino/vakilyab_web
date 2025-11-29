@@ -70,7 +70,7 @@ export default function ConsultationConfirmationPage({ params }: { params: Promi
         switch (type) {
             case 'in-person': return 'حضوری';
             case 'phone': return 'تلفنی';
-            case 'video': return 'تصویری';
+            case 'video': return 'تماس ویدئویی';
             default: return type;
         }
     };

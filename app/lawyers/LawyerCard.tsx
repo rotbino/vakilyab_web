@@ -5,7 +5,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/radix/card';
 import { Badge } from '@/components/radix/badge';
 import { Button } from '@/components/radix/button';
-import {Star, MapPin, Eye, Crown, Briefcase, FileQuestion, Wifi, WifiOff} from 'lucide-react';
+import { Star, MapPin, Eye, Crown, Briefcase, FileQuestion, Wifi, WifiOff, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { LawyerList } from '@/lib/api/types';
@@ -50,13 +50,11 @@ export default function LawyerCard({ lawyer }: LawyerCardProps) {
     };
 
     return (
-        <Card
-            className="mb-4 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
-
+        <Card className="mb-4 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
             <div className="flex flex-col">
                 {/* Crown bar at the top */}
                 {isSubscriptionActive && (
-                    <div className="px-2 pt-3 mb-1 p-3 ">
+                    <div className="px-2 pt-3 mb-1 p-3">
                         {renderCrownBar()}
                     </div>
                 )}
@@ -64,13 +62,16 @@ export default function LawyerCard({ lawyer }: LawyerCardProps) {
                 <div className="flex">
                     {/* Image section */}
                     <div className="relative w-28 h-28 flex-shrink-0">
-                        <Image
-                            src={lawyer.profileImage}
-                            alt={`${lawyer.name} ${lawyer.lastName}`}
-                            width={112}
-                            height={112}
-                            className="w-full h-full object-cover"
-                        />
+                        <Link href={`/${lawyer.username}`} >
+                            <Image
+                                src={lawyer.profileImage}
+                                alt={`${lawyer.name} ${lawyer.lastName}`}
+                                width={112}
+                                height={112}
+                                className="w-full h-full object-cover"
+                            />
+                        </Link>
+
                         {/* Online status indicator - added here */}
                         <div className="absolute top-1 right-1">
                             {lawyer.isOnline ? (
@@ -93,10 +94,7 @@ export default function LawyerCard({ lawyer }: LawyerCardProps) {
                                     <h3 className="font-bold text-lg text-gray-900 leading-tight">
                                         {lawyer.name} {lawyer.lastName}
                                     </h3>
-
-                                    {/* Subscription info */}
                                 </div>
-
                                 <Badge className="bg-red-100 text-red-800 text-xs font-medium py-1 px-2 rounded-md">
                                     {lawyer.specialty}
                                 </Badge>
@@ -112,16 +110,15 @@ export default function LawyerCard({ lawyer }: LawyerCardProps) {
                                     <Eye className="w-4 h-4 text-gray-500" />
                                     <span className="text-sm font-medium">{lawyer.views.toLocaleString()}</span>
                                 </div>
-
-                                {/* Steps section - نمایش تعداد پله‌ها به جای رتبه */}
-
                             </div>
+
                             {lawyer.questionPoints && lawyer.questionPoints > 0 && (
                                 <div className="flex items-center gap-1 mb-2">
                                     <FileQuestion className="w-4 h-4 text-gray-500" />
                                     <span className="text-sm font-medium">{lawyer.questionPoints} پاسخ به سوال</span>
                                 </div>
                             )}
+
                             {/* Location and experience */}
                             <div className="flex items-center gap-4 mb-2 text-gray-600">
                                 <div className="flex items-center gap-1">
@@ -137,7 +134,7 @@ export default function LawyerCard({ lawyer }: LawyerCardProps) {
                     </CardContent>
                 </div>
 
-                {/* Fee and button */}
+                {/* Fee and buttons */}
                 <div className="px-4 flex items-center justify-between pt-3 border-t border-gray-100">
                     <div>
                         <span className="text-xs text-gray-500 block">هزینه مشاوره</span>
@@ -145,12 +142,22 @@ export default function LawyerCard({ lawyer }: LawyerCardProps) {
                             {lawyer.consultationFee.toLocaleString()} تومان
                         </span>
                     </div>
-                    <Link href={`/${lawyer.id}`} className="block">
-                        <Button size="sm"
-                                className="bg-red-800 hover:bg-red-900 text-white font-medium py-1.5 px-4 rounded-lg transition-colors duration-300 shadow-sm">
-                            مشاهده
-                        </Button>
-                    </Link>
+
+                    <div className="flex gap-2">
+                        <Link href={`/${lawyer.username}`} className="block">
+                            <Button size="sm"
+                                    className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-1.5 px-4 rounded-lg transition-colors duration-300 shadow-sm">
+                                مشاهده
+                            </Button>
+                        </Link>
+                        <Link href={`/${lawyer.username}/consultation-options`} className="block">
+                            <Button size="sm"
+                                    className="bg-red-800 hover:bg-red-900 text-white font-medium py-1.5 px-4 rounded-lg transition-colors duration-300 shadow-sm flex items-center gap-1">
+                                <MessageCircle className="w-4 h-4" />
+                                مشاوره
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </Card>

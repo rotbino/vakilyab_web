@@ -202,6 +202,12 @@ export const mockApi = {
             return lawyers.find(lawyer => lawyer.id === id) || null;
         },
 
+        getByUsername: async (username: string): Promise<LawyerList | null> => {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const lawyers = getStorageData('lawyers', lawyersData);
+            return lawyers.find(lawyer => lawyer.username === username) || null;
+        },
+
         search: async (searchTerm: string): Promise<LawyerList[]> => {
             await new Promise(resolve => setTimeout(resolve, 300));
             const lawyers = getStorageData('lawyers', lawyersData);
