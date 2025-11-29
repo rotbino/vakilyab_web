@@ -2,6 +2,27 @@
 
 
 
+export interface ConsultationType {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+}
+
+export interface ConsultationPricing {
+  id: string;
+  lawyerId: string;
+  duration: string; // "15min", "30min", "45min", "60min", "90min", "120min"
+  inPersonPrice: number;
+  phonePrice: number;
+  videoPrice: number;
+  phonePercentage: number; // درصد قیمت تلفنی نسبت به حضوری
+  videoPercentage: number; // درصد قیمت تصویری نسبت به حضوری
+  isActive: boolean;
+}
+
+
+
 export interface TimeSlot {
   id: string;
   date: string;
@@ -33,7 +54,9 @@ export interface LawyerList {
   address: string;
   rating: number;
   consultationFee: number;
-
+  reviews?: Review[];
+  qaPairs?: QAPair[];
+  isOnline: boolean;
   // اطلاعات اشتراک وکیل
   subscription?: {
     planId: string;
@@ -161,7 +184,8 @@ export interface UserProfile {
   views?: number;
   address?: string;
   rating?: number;
-  consultationFee?: number;
+  // حذف consultationFee قدیمی و جایگزینی با ساختار جدید
+  // consultationFee?: number;  ← این فیلد حذف می‌شود
   profileImage?: string;
 
   // داده‌های مشاوره‌ها
@@ -247,6 +271,8 @@ export interface UserProfile {
   },
   questionPoints?: number;
 
+  // ← اضافه کردن فیلد جدید برای قیمت‌های مشاوره
+  consultationPricing?: ConsultationPricing[];
 }
 
 export interface UserPreferences {
@@ -272,12 +298,6 @@ export interface QAPair {
   answeredAt: string;
 }
 
-// به‌روزرسانی LawyerList
-export interface LawyerList {
-  // ... فیلدهای قبلی
-  reviews?: Review[];
-  qaPairs?: QAPair[];
-}
 
 // lib/api/types.ts
 

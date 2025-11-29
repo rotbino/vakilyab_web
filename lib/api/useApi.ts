@@ -25,12 +25,25 @@ export const useSpecialties = () => {
     });
 };
 
-export const useConsultationOptions = () => {
+
+// در lib/api/useApi.ts
+// lib/api/useApi.ts
+
+export const useConsultationOptions = (lawyerId?: string) => {
     return useQuery({
-        queryKey: ['consultationOptions'],
-        queryFn: mockApi.consultationOptions.getAll,
-        staleTime: Infinity,
-        gcTime: Infinity,
+        queryKey: ['consultationOptions', lawyerId],
+        queryFn: () => mockApi.consultationOptions.getForLawyer(lawyerId || ''),
+        enabled: !!lawyerId,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        // اگر داده‌ای وجود نداشت، از قیمت‌های پیش‌فرض استفاده کن
+        placeholderData: [
+            { id: "15min", name: "15 دقیقه", inPersonPrice: 150000, phonePrice: 120000, videoPrice: 135000 },
+            { id: "30min", name: "30 دقیقه", inPersonPrice: 250000, phonePrice: 200000, videoPrice: 225000 },
+            { id: "45min", name: "45 دقیقه", inPersonPrice: 350000, phonePrice: 280000, videoPrice: 315000 },
+            { id: "60min", name: "1 ساعت", inPersonPrice: 450000, phonePrice: 360000, videoPrice: 405000 },
+            { id: "90min", name: "1.5 ساعت", inPersonPrice: 600000, phonePrice: 480000, videoPrice: 540000 },
+            { id: "120min", name: "2 ساعت", inPersonPrice: 750000, phonePrice: 600000, videoPrice: 675000 }
+        ]
     });
 };
 
@@ -607,6 +620,33 @@ export const useDirectQuestion = () => {
         },
         onError: (error) => {
             console.error('Direct question error:', error);
+            throw error;
+        }
+    });
+};
+
+// lib/api/useApi.ts
+
+export const useConsultationPricing = (lawyerId?: string) => {
+    return useQuery({
+        queryKey: ['consultationPricing', lawyerId],
+        queryFn: () => mockApi.consultationPricing.getByLawyerId(lawyerId || ''),
+        enabled: !!lawyerId,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+};
+
+export const useUpdateConsultationPricing = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ lawyerId, pricing }: { lawyerId: string; pricing: ConsultationPricing[] }) =>
+            mockApi.consultationPricing.update(lawyerId, pricing),
+        onSuccess: (_, { lawyerId }) => {
+            queryClient.invalidateQueries({ queryKey: ['consultationPricing', lawyerId] });
+        },
+        onError: (error) => {
+            console.error('Update consultation pricing error:', error);
             throw error;
         }
     });

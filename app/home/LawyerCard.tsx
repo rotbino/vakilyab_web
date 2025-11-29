@@ -1,11 +1,11 @@
-// app/home/LawyerCardMobile.tsx
+// app/home/LawyerCard.tsx
 "use client";
 
 import React from 'react';
 import { Card, CardContent } from '@/components/radix/card';
 import { Badge } from '@/components/radix/badge';
 import { Button } from '@/components/radix/button';
-import {Star, MapPin, Eye, Crown, Briefcase, FileQuestion} from 'lucide-react';
+import {Star, MapPin, Eye, Crown, Briefcase, FileQuestion, Wifi, WifiOff} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { LawyerList } from '@/lib/api/types';
@@ -71,6 +71,18 @@ export default function LawyerCard({ lawyer }: LawyerCardProps) {
                             height={112}
                             className="w-full h-full object-cover"
                         />
+                        {/* Online status indicator - added here */}
+                        <div className="absolute top-1 right-1">
+                            {lawyer.isOnline ? (
+                                <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+                                    <Wifi className="w-3 h-3 text-white" />
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center w-6 h-6 bg-gray-400 rounded-full">
+                                    <WifiOff className="w-3 h-3 text-white" />
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <CardContent className="flex-1 p-4">
@@ -83,7 +95,7 @@ export default function LawyerCard({ lawyer }: LawyerCardProps) {
                                     </h3>
 
                                     {/* Subscription info */}
-                                                                   </div>
+                                </div>
 
                                 <Badge className="bg-red-100 text-red-800 text-xs font-medium py-1 px-2 rounded-md">
                                     {lawyer.specialty}

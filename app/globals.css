@@ -215,3 +215,18 @@ select:focus {
   background: green !important;
   transform: scale(1.1);
 }
+
+/* app/globals.css */
+
+/* استایل‌های پایه برای سویچ در حالت RTL */
+[dir="rtl"] .rt-switch {
+  direction: ltr;
+}
+
+[dir="rtl"] .rt-switch [data-state="checked"] {
+  background-color: hsl(var(--primary));
+}
+
+[dir="rtl"] .rt-switch [data-state="unchecked"] {
+  background-color: hsl(var(--input));
+}

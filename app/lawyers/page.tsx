@@ -7,14 +7,13 @@ import { Button } from "@/components/radix/button";
 import { Badge } from "@/components/radix/badge";
 import { Input } from "@/components/radix/input";
 import { Search, Filter, MapPin, Briefcase, Star, Eye, Crown } from "lucide-react";
-import LawyerCard from '@/app/home/LawyerCard';
-
 import MobileFooter from '@/app/home/MobileFooter';
 import DesktopNav from '@/app/home/DesktopNav';
 import MobileNav from '@/app/home/MobileNav';
 import LocationSelector from '@/app/public/LocationSelector';
 import { useLawyers } from "@/lib/api/useApi";
 import { provinces } from "@/lib/api/mockData";
+import LawyersList from "@/app/lawyers/LawyersList";
 
 export default function LawyersPage() {
     const searchParams = useSearchParams();
@@ -188,36 +187,16 @@ export default function LawyersPage() {
                     </div>
                 </div>
 
-                {/* Lawyers Grid - Desktop */}
-                <div className="md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    {filteredLawyers.map(lawyer => (
-                        <LawyerCard key={lawyer.id} lawyer={lawyer} />
-                    ))}
-                </div>
 
+                <LawyersList
+                    lawyers={filteredLawyers}
+                    title="لیست وکلا"
+                    showOnlineFilter={true}
+                />
 
-
-                {/* Empty State */}
-                {filteredLawyers.length === 0 && (
-                    <Card className="text-center py-12">
-                        <CardContent>
-                            <div className="text-gray-400 mb-4">
-                                <Filter className="w-16 h-16 mx-auto" />
-                            </div>
-                            <h3 className="text-xl font-medium text-gray-900 mb-2">وکیلی یافت نشد</h3>
-                            <p className="text-gray-600 mb-4">
-                                با تغییر فیلترها یا جستجوی عبارت دیگر، دوباره تلاش کنید
-                            </p>
-                            <Button onClick={resetFilters} variant="outline">
-                                حذف فیلترها
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
+                {/* Mobile Footer */}
+                <MobileFooter />
             </div>
-
-            {/* Mobile Footer */}
-            <MobileFooter />
         </div>
     );
 }

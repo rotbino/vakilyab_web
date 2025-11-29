@@ -1,5 +1,13 @@
 // lib/api/mockApi.ts
-import {Answer, LawyerList, LegalQuestion, TimeSlot, UserProfile, WeeklyTemplate} from '@/lib/api/types';
+import {
+    Answer,
+    ConsultationPricing,
+    LawyerList,
+    LegalQuestion,
+    TimeSlot,
+    UserProfile,
+    WeeklyTemplate
+} from '@/lib/api/types';
 import {
     consultationOptions,
     lawyersData, legalQuestionsData,
@@ -48,22 +56,88 @@ export const mockApi = {
         }
     },
 
+    // lib/api/mockApi.ts
+
+// در تابع consultationOptions، تغییر برای استفاده از قیمت‌های تنظیم شده
     consultationOptions: {
         getAll: async () => {
             await new Promise(resolve => setTimeout(resolve, 100));
-            return getStorageData('consultationOptions', consultationOptions);
-        }
+            const options = [
+                { id: "15min", name: "15 دقیقه", price: 150000 },
+                { id: "30min", name: "30 دقیقه", price: 250000 },
+                { id: "45min", name: "45 دقیقه", price: 350000 },
+                { id: "60min", name: "60 دقیقه", price: 450000 },
+                { id: "90min", name: "1.5 ساعت", price: 600000 },
+                { id: "120min", name: "2 ساعت", price: 750000 }
+            ];
+
+            // اگر کاربر وارد سیستم باشد، از قیمت‌های تنظیم شده استفاده کن
+            if (typeof window !== 'undefined') {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (user?.id) {
+                    const pricing = getStorageData(`consultationPricing_${user.id}`, []);
+                    if (pricing.length > 0) {
+                        return pricing
+                            .filter(p => p.isActive)
+                            .map(p => ({
+                                id: p.duration,
+                                name: p.duration === '15min' ? '15 دقیقه' :
+                                    p.duration === '30min' ? '30 دقیقه' :
+                                        p.duration === '45min' ? '45 دقیقه' :
+                                            p.duration === '60min' ? '60 دقیقه' :
+                                                p.duration === '90min' ? '1.5 ساعت' : '2 ساعت',
+                                price: p.price
+                            }));
+                    }
+                }
+            }
+
+            return options;
+        },
+        // lib/api/mockApi.ts
+
+// در تابع getForLawyer
+        getForLawyer: async (lawyerId: string) => {
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // دریافت قیمت‌های تنظیم شده توسط وکیل
+            const pricing = getStorageData(`consultationPricing_${lawyerId}`, []);
+
+            // اگر قیمت‌های تنظیم شده وجود داشته باشد، از آنها استفاده کن
+            if (pricing.length > 0) {
+                const activePricing = pricing.filter(p => p.isActive);
+                if (activePricing.length > 0) {
+                    return activePricing.map(p => ({
+                        id: p.duration,
+                        name: p.duration === '15min' ? '15 دقیقه' :
+                            p.duration === '30min' ? '30 دقیقه' :
+                                p.duration === '45min' ? '45 دقیقه' :
+                                    p.duration === '60min' ? '60 دقیقه' :
+                                        p.duration === '90min' ? '1.5 ساعت' : '2 ساعت',
+                        inPersonPrice: p.inPersonPrice,
+                        phonePrice: p.phonePrice,
+                        videoPrice: p.videoPrice
+                    }));
+                }
+            }
+
+            // اگر قیمت‌های تنظیم شده وجود نداشت، از قیمت‌های پیش‌فرض استفاده کن
+            return [
+                { id: "15min", name: "15 دقیقه", inPersonPrice: 150000, phonePrice: 120000, videoPrice: 135000 },
+                { id: "30min", name: "30 دقیقه", inPersonPrice: 250000, phonePrice: 200000, videoPrice: 225000 },
+                { id: "45min", name: "45 دقیقه", inPersonPrice: 350000, phonePrice: 280000, videoPrice: 315000 },
+                { id: "60min", name: "1 ساعت", inPersonPrice: 450000, phonePrice: 360000, videoPrice: 405000 },
+                { id: "90min", name: "1.5 ساعت", inPersonPrice: 600000, phonePrice: 480000, videoPrice: 540000 },
+                { id: "120min", name: "2 ساعت", inPersonPrice: 750000, phonePrice: 600000, videoPrice: 675000 }
+            ];
+        },
     },
+
+    // تابع جدید برای دریافت قیمت‌ها با پشتیبانی از قیمت‌های پیش‌فرض
 
     // Lawyers API
     lawyers: {
-        // lib/api/mockApi.ts
-
-        // lib/api/mockApi.ts
-
-// در تابع getAll
-        // lib/api/mockApi.ts
-
+        // در تابع getAll
         getAll: async (filters?: {
             specialty?: string;
             province?: string;
@@ -93,6 +167,16 @@ export const mockApi = {
                     }
                 }
                 return lawyer;
+            });
+
+            // سورت کردن وکلا: آنلاین‌ها اول، سپس بر اساس امتیاز
+            lawyers.sort((a, b) => {
+                // اگر وکیل A آنلاین و وکیل B آفلاین باشد، A اول می‌آید
+                if (a.isOnline && !b.isOnline) return -1;
+                // اگر وکیل A آفلاین و وکیل B آنلاین باشد، B اول می‌آید
+                if (!a.isOnline && b.isOnline) return 1;
+                // اگر هر دو آنلاین یا هر دو آفلاین هستند، بر اساس امتیاز سورت می‌شوند
+                return (b.rank || 0) - (a.rank || 0);
             });
 
             if (filters) {
@@ -781,7 +865,45 @@ export const mockApi = {
         },
 
     },
+// lib/api/mockApi.ts
 
+    consultationPricing: {
+        getByLawyerId: async (lawyerId: string) => {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const pricing: ConsultationPricing[] = getStorageData(`consultationPricing_${lawyerId}`, []);
+            return pricing;
+        },
+
+        update: async (lawyerId: string, pricing: ConsultationPricing[]) => {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            setStorageData(`consultationPricing_${lawyerId}`, pricing);
+
+            // به‌روزرسانی اطلاعات کاربر
+            const users: UserProfile[] = getStorageData('users', usersData);
+            const userIndex = users.findIndex(u => u.id === lawyerId);
+
+            if (userIndex !== -1) {
+                users[userIndex] = {
+                    ...users[userIndex],
+                    consultationPricing: pricing
+                };
+                setStorageData('users', users);
+            }
+        },
+
+        // دریافت قیمت پیش‌فرض بر اساس مدت زمان
+        getDefaultPrice: (duration: string) => {
+            const defaultPrices = {
+                "15min": 150000,
+                "30min": 250000,
+                "45min": 350000,
+                "60min": 450000,
+                "90min": 600000,
+                "120min": 750000
+            };
+            return defaultPrices[duration as keyof typeof defaultPrices] || 0;
+        }
+    }
 
 
 };

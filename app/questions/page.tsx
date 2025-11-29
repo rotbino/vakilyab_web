@@ -136,17 +136,19 @@ export default function LegalQuestionsPage() {
           </Card>
 
           {/* My Questions Section */}
+
+
           {showMyQuestions && (
               <Card className="mb-6 border-2 border-blue-200 bg-blue-50">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl text-blue-800 flex items-center gap-2">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <CardTitle className="text-xl sm:text-2xl text-blue-800 flex items-center gap-2">
                       <User className="w-5 h-5" />
                       سوالات من
                     </CardTitle>
                     <Button
                         onClick={() => setShowNewQuestionForm(!showNewQuestionForm)}
-                        className="bg-[#ca2a30] hover:bg-[#b02529]"
+                        className="bg-[#ca2a30] hover:bg-[#b02529] w-full sm:w-auto"
                     >
                       <Plus className="w-4 h-4 ml-2" />
                       سوال جدید
@@ -155,10 +157,10 @@ export default function LegalQuestionsPage() {
                 </CardHeader>
                 <CardContent>
                   {filteredQuestions.length === 0 ? (
-                      <div className="text-center py-8">
+                      <div className="text-center py-8 sm:py-12">
                         <MessageSquare className="w-16 h-16 mx-auto text-blue-300 mb-4" />
-                        <h3 className="text-xl font-medium text-blue-800 mb-2">شما هنوز سوالی نپرسیده‌اید</h3>
-                        <p className="text-blue-600 mb-6 max-w-md mx-auto">
+                        <h3 className="text-xl sm:text-2xl font-medium text-blue-800 mb-2">شما هنوز سوالی نپرسیده‌اید</h3>
+                        <p className="text-blue-600 text-sm sm:text-base mb-6 max-w-md mx-auto">
                           سوال حقوقی خود را بپرسید تا توسط وکلای متخصص پاسخ داده شود.
                           با ثبت سوال، می‌توانید از دانش و تجربه وکلا بهره‌مند شوید.
                         </p>

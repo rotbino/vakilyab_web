@@ -1,4 +1,3 @@
-// app/[id]/confirmation/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/radix/card";
 import { Button } from "@/components/radix/button";
 import { Badge } from "@/components/radix/badge";
-import { ArrowRight, ArrowLeft, Clock, User, Calendar, CreditCard } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, User, Calendar, CreditCard, Phone, Video } from "lucide-react";
 import { useAuth } from "@/lib/api/useApi";
 
 interface BookingData {
@@ -14,6 +13,7 @@ interface BookingData {
     lawyerName: string;
     consultationId: string;
     consultationName: string;
+    consultationType: 'in-person' | 'phone' | 'video';
     consultationPrice: number;
     timeSlot: {
         id: string;
@@ -27,15 +27,12 @@ interface BookingData {
 
 export default function ConsultationConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
-    // استفاده از React.use برای unwrapping پارامترها
     const { id: lawyerId } = React.use(params);
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user } = useAuth();
 
     useEffect(() => {
-        // در معماری جدید، داده‌ها باید از state یا React Query خوانده شوند
-        // برای سادگی، هنوز از localStorage استفاده می‌کنیم، اما در آینده باید این را تغییر دهید
         const storedData = localStorage.getItem('consultationBooking');
         if (storedData) {
             const data = JSON.parse(storedData);
@@ -54,7 +51,6 @@ export default function ConsultationConfirmationPage({ params }: { params: Promi
 
         // شبیه‌سازی پرداخت
         setTimeout(() => {
-            // در یک برنامه واقعی، اینجا به درگاه پرداخت هدایت می‌شود
             router.push(`/${lawyerId}/invoice`);
         }, 1500);
     };
@@ -68,6 +64,33 @@ export default function ConsultationConfirmationPage({ params }: { params: Promi
             day: 'numeric'
         };
         return new Intl.DateTimeFormat('fa-IR', options).format(date);
+    };
+
+    const getConsultationTypeLabel = (type: string) => {
+        switch (type) {
+            case 'in-person': return 'حضوری';
+            case 'phone': return 'تلفنی';
+            case 'video': return 'تصویری';
+            default: return type;
+        }
+    };
+
+    const getConsultationTypeColor = (type: string) => {
+        switch (type) {
+            case 'in-person': return 'bg-blue-100 text-blue-800';
+            case 'phone': return 'bg-green-100 text-green-800';
+            case 'video': return 'bg-purple-100 text-purple-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getConsultationTypeIcon = (type: string) => {
+        switch (type) {
+            case 'in-person': return <User className="w-4 h-4" />;
+            case 'phone': return <Phone className="w-4 h-4" />;
+            case 'video': return <Video className="w-4 h-4" />;
+            default: return <Clock className="w-4 h-4" />;
+        }
     };
 
     if (!bookingData) {
@@ -130,6 +153,16 @@ export default function ConsultationConfirmationPage({ params }: { params: Promi
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-3 border rounded-lg">
+                                            <div className="text-sm text-gray-600 mb-1">نوع مشاوره</div>
+                                            <div className="flex items-center gap-2">
+                                                {getConsultationTypeIcon(bookingData.consultationType)}
+                                                <Badge className={getConsultationTypeColor(bookingData.consultationType)}>
+                                                    {getConsultationTypeLabel(bookingData.consultationType)}
+                                                </Badge>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-3 border rounded-lg">
                                             <div className="text-sm text-gray-600 mb-1">مدت زمان</div>
                                             <div className="font-medium">{bookingData.consultationName}</div>
                                         </div>
@@ -144,7 +177,7 @@ export default function ConsultationConfirmationPage({ params }: { params: Promi
                                             <div className="font-medium">{formatDate(bookingData.timeSlot.date)}</div>
                                         </div>
 
-                                        <div className="p-3 border rounded-lg">
+                                        <div className="p-3 border rounded-lg col-span-2">
                                             <div className="text-sm text-gray-600 mb-1">ساعت</div>
                                             <div className="font-medium">{bookingData.timeSlot.startTime} - {bookingData.timeSlot.endTime}</div>
                                         </div>
@@ -158,7 +191,7 @@ export default function ConsultationConfirmationPage({ params }: { params: Promi
                                         <span className="font-bold text-lg">{bookingData.consultationPrice.toLocaleString()} تومان</span>
                                     </div>
                                     <div className="text-sm text-gray-600">
-                                        هزینه مشاوره {bookingData.consultationName} با وکیل {bookingData.lawyerName}
+                                        هزینه مشاوره {getConsultationTypeLabel(bookingData.consultationType)} {bookingData.consultationName} با وکیل {bookingData.lawyerName}
                                     </div>
                                 </div>
                             </CardContent>

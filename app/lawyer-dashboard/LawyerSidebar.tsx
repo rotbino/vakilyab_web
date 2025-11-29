@@ -65,6 +65,11 @@ export default function LawyerSidebar({ isSidebarOpen, setIsSidebarOpen }: Lawye
             icon: Clock
         },
         {
+            title: "قیمت‌های مشاوره",
+            href: "/lawyer-dashboard/consultation-pricing",
+            icon: Settings
+        },
+        {
             title: "خدمات من",
             href: "/lawyer-dashboard/my-services",
             icon: Briefcase

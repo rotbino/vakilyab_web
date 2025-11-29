@@ -1,6 +1,6 @@
 // lib/api/mockData.ts
 
-import {LawyerList, LegalQuestion, UserProfile} from "@/lib/api/types";
+import {ConsultationPricing, LawyerList, LegalQuestion, UserProfile} from "@/lib/api/types";
 
 // تابع مقداردهی اولیه localStorage
 export const initializeLocalStorage = () => {
@@ -54,6 +54,7 @@ export const clearAndInitializeLocalStorage = () => {
 export const lawyersData: LawyerList[] = [
     {
         id: "1",
+        isOnline: true,
         name: "احمد",
         lastName: "محمدی",
         specialty: "حقوقی",
@@ -81,6 +82,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "2",
+        isOnline: true,
         name: "سارا",
         lastName: "رضایی",
         specialty: "خانواده",
@@ -108,6 +110,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "3",
+        isOnline: true,
         name: "رضا",
         lastName: "حسینی",
         specialty: "کیفری",
@@ -135,6 +138,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "4",
+        isOnline: false,
         name: "مریم",
         lastName: "اکبری",
         specialty: "مالیاتی",
@@ -152,6 +156,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "5",
+        isOnline: false,
         name: "علی",
         lastName: "صالحی",
         specialty: "حقوقی",
@@ -169,6 +174,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "6",
+        isOnline: false,
         name: "زهرا",
         lastName: "موسوی",
         specialty: "کار",
@@ -187,6 +193,7 @@ export const lawyersData: LawyerList[] = [
     // وکلای جدید تهران
     {
         id: "7",
+        isOnline: false,
         name: "محمد",
         lastName: "کریمی",
         specialty: "ملکی",
@@ -204,6 +211,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "8",
+        isOnline: false,
         name: "فاطمه",
         lastName: "حسینی",
         specialty: "ثبتی",
@@ -221,6 +229,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "9",
+        isOnline: false,
         name: "حسین",
         lastName: "صادقی",
         specialty: "شرکت‌ها",
@@ -238,6 +247,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "10",
+        isOnline: false,
         name: "زینب",
         lastName: "میرزایی",
         specialty: "تجاری",
@@ -255,6 +265,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "11",
+        isOnline: false,
         name: "مهدی",
         lastName: "احمدی",
         specialty: "بین‌الملل",
@@ -272,6 +283,7 @@ export const lawyersData: LawyerList[] = [
     },
     {
         id: "12",
+        isOnline: false,
         name: "سیده نرگس",
         lastName: "موسوی",
         specialty: "خانواده",
@@ -793,6 +805,76 @@ export const legalQuestionsData: LegalQuestion[] = [
         isAnswered: false,
         viewCount: 51,
         answers: []
+    }
+];
+
+// در lib/api/mockData.ts
+export const consultationPricingData: ConsultationPricing[] = [
+    {
+        id: "1_15min",
+        lawyerId: "1",
+        duration: "15min",
+        inPersonPrice: 150000,
+        phonePrice: 120000,
+        videoPrice: 135000,
+        phonePercentage: 80,
+        videoPercentage: 90,
+        isActive: true
+    },
+    {
+        id: "1_30min",
+        lawyerId: "1",
+        duration: "30min",
+        inPersonPrice: 250000,
+        phonePrice: 200000,
+        videoPrice: 225000,
+        phonePercentage: 80,
+        videoPercentage: 90,
+        isActive: true
+    },
+    {
+        id: "1_45min",
+        lawyerId: "1",
+        duration: "45min",
+        inPersonPrice: 350000,
+        phonePrice: 280000,
+        videoPrice: 315000,
+        phonePercentage: 80,
+        videoPercentage: 90,
+        isActive: true
+    },
+    {
+        id: "1_60min",
+        lawyerId: "1",
+        duration: "60min",
+        inPersonPrice: 450000,
+        phonePrice: 360000,
+        videoPrice: 405000,
+        phonePercentage: 80,
+        videoPercentage: 90,
+        isActive: true
+    },
+    {
+        id: "1_90min",
+        lawyerId: "1",
+        duration: "90min",
+        inPersonPrice: 600000,
+        phonePrice: 480000,
+        videoPrice: 540000,
+        phonePercentage: 80,
+        videoPercentage: 90,
+        isActive: true
+    },
+    {
+        id: "1_120min",
+        lawyerId: "1",
+        duration: "120min",
+        inPersonPrice: 750000,
+        phonePrice: 600000,
+        videoPrice: 675000,
+        phonePercentage: 80,
+        videoPercentage: 90,
+        isActive: true
     }
 ];
 

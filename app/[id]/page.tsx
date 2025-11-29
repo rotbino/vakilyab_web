@@ -1,3 +1,4 @@
+// app/lawyer/[id]/page.tsx
 'use client';
 
 import { notFound, useRouter } from 'next/navigation';
@@ -19,7 +20,7 @@ import {
     MessageCircle,
     CheckCircle,
     CreditCard,
-    Crown
+    Crown, WifiOff, Wifi
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -28,6 +29,13 @@ import TimeSlotSelector from '@/app/lawyer-dashboard/TimeSlotSelector';
 import {useLawyer, useReviews, useQAPairs} from "@/lib/api/useApi";
 import {useTimeSlots} from "@/lib/api/useApi";
 import {useAuth} from "@/lib/api/useApi";
+import ReviewsSection from "@/app/[id]/component/ReviewsSection";
+import QandASection from "@/app/[id]/component/QandASection";
+import DirectQuestionSection from "@/app/[id]/component/DirectQuestionSection";
+import ConsultationPricingTabs from "@/app/[id]/component/ConsultationPricingTabs";
+
+// کامپوننت‌های جدید
+
 
 interface LawyerDetailPageProps {
     params: Promise<{ id: string }>;
@@ -124,7 +132,7 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
             return;
         }
 
-        router.push(`/${lawyer?.id}/booking`);
+        router.push(`/${lawyer?.id}/consultation-options`);
     };
 
     // تابع برای رندر کردن نوار تاج‌ها
@@ -134,7 +142,7 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
 
         return (
             <div className="flex gap-1 justify-between">
-                <div className={"flex gap-1"}>
+                <div className={"flex gap-1 mt-1"}>
                     {Array.from({ length: totalCrowns }).map((_, index) => (
                         <Crown
                             key={index}
@@ -149,7 +157,7 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
 
                 {/* نمایش نشان وکیل ویژه برای پلن یکساله */}
                 {isSubscriptionActive && lawyer?.subscription?.isVIP && (
-                    <Badge className="bg-yellow-500 text-white text-xs font-medium py-0.5 px-2 rounded-full">
+                    <Badge className="bg-yellow-500 text-white text-xs font-medium py-1 px-3  rounded-full">
                         وکیل ویژه
                     </Badge>
                 )}
@@ -190,22 +198,28 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
             <div className="max-w-6xl mx-auto">
-                {/* Back Button */}
-                <div className="mb-6">
-                    <Link href="/">
-                        <Button variant="outline" className="flex items-center gap-2">
-                            ← بازگشت به لیست وکلا
-                        </Button>
-                    </Link>
-                </div>
-
                 {/* Header Card */}
-                <Card className="mb-8 overflow-hidden shadow-lg">
-                    <div className="relative h-64 bg-gradient-to-r from-orange-500 to-orange-600">
+                <div className="mb-8 overflow-hidden shadow-lg -mx-4 -mt-8">
+                    <div className="relative h-64 bg-gradient-to-r from-red-800 to-red-600">
                         <div className="absolute inset-0 bg-black opacity-20"></div>
+
+                        {/* Back Button - روی عکس */}
+                        {/* Back Button - روی عکس */}
+                        <Link href="/" className="absolute top-4 left-4 z-10">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="bg-white/30 hover:bg-white/50 text-white border-white/50 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center shadow-xl transition-all duration-300"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                </svg>
+                            </Button>
+                        </Link>
+
                         <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent">
-                            <div className="flex items-center gap-4">
-                                <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+                            <div className="flex  gap-4">
+                                <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white relative">
                                     <Image
                                         src={lawyer.profileImage}
                                         alt={`${lawyer.name} ${lawyer.lastName}`}
@@ -213,13 +227,25 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                                         height={96}
                                         className="w-full h-full object-cover"
                                     />
+                                    {/* Online status indicator */}
+                                    <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2">
+                                        {lawyer.isOnline ? (
+                                            <div className="w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                                                <Wifi className="w-3 h-3 text-white" />
+                                            </div>
+                                        ) : (
+                                            <div className="w-6 h-6 bg-gray-400 rounded-full border-2 border-white flex items-center justify-center">
+                                                <WifiOff className="w-3 h-3 text-white" />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="flex-1">
                                     <h1 className="text-3xl font-bold text-white mb-2">
                                         {lawyer.name} {lawyer.lastName}
                                     </h1>
                                     <div className="flex flex-wrap gap-2">
-                                        <Badge className="bg-white text-orange-600 hover:bg-orange-50">
+                                        <Badge className="bg-white text-red-800 hover:bg-red-50">
                                             {lawyer.specialty}
                                         </Badge>
                                         <div className="flex items-center gap-1 bg-white/80 text-gray-800 px-2 py-1 rounded-full text-sm">
@@ -230,6 +256,19 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                                             <MapPin className="w-4 h-4" />
                                             {lawyer.city}
                                         </div>
+
+                                        {/* Online status badge */}
+                                        {lawyer.isOnline ? (
+                                            <div className="flex items-center gap-1 bg-green-500 text-white px-2 py-1 rounded-full text-sm">
+                                                <Wifi className="w-4 h-4" />
+                                                <span>آنلاین</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1 bg-gray-500 text-white px-2 py-1 rounded-full text-sm">
+                                                <WifiOff className="w-4 h-4" />
+                                                <span>آفلاین</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* نمایش وضعیت اشتراک */}
@@ -242,7 +281,8 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                             </div>
                         </div>
                     </div>
-                </Card>
+                </div>
+
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Content */}
@@ -251,7 +291,7 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                         <Card className="lg:col-span-3">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <Award className="w-5 h-5 text-orange-500" />
+                                    <Award className="w-5 h-5 text-red-600"/>
                                     درباره من
                                 </CardTitle>
                             </CardHeader>
@@ -263,34 +303,18 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                         </Card>
 
                         {/* Consultation Card - برای موبایل بالاتر */}
-                        <Card className="lg:hidden">
-                            <CardHeader>
-                                <CardTitle className="text-orange-700">درخواست مشاوره</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    {consultationOptions.map(option => (
-                                        <div key={option.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-                                            <span className="font-medium">{option.name}</span>
-                                            <span className="text-sm font-medium">{option.price.toLocaleString()} تومان</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <Button
-                                    onClick={handleConsultationRequest}
-                                    className="w-full bg-orange-500 hover:bg-orange-600 flex items-center gap-2"
-                                >
-                                    <MessageCircle className="w-4 h-4" />
-                                    درخواست مشاوره
-                                </Button>
-                            </CardContent>
-                        </Card>
+                        <div className="lg:hidden">
+                            <ConsultationPricingTabs
+                                lawyer={lawyer}
+                                onConsultationRequest={handleConsultationRequest}
+                            />
+                        </div>
 
                         {/* Services - تمام عرض */}
                         <Card className="lg:col-span-3">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <CreditCard className="w-5 h-5 text-orange-500" />
+                                    <CreditCard className="w-5 h-5 text-red-600"/>
                                     خدمات و قیمت‌ها
                                 </CardTitle>
                             </CardHeader>
@@ -302,18 +326,19 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                                             onClick={() => toggleService(service.id)}
                                             className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                                                 selectedServices.includes(service.id)
-                                                    ? "border-orange-500 bg-orange-50"
+                                                    ? "border-red-600 bg-red-50"
                                                     : "border-gray-200 hover:border-gray-300"
                                             }`}
                                         >
                                             <div className="flex items-start gap-3">
-                                                <div className={`w-5 h-5 rounded border flex items-center justify-center mt-0.5 flex-shrink-0 ${
-                                                    selectedServices.includes(service.id)
-                                                        ? "border-orange-500 bg-orange-500"
-                                                        : "border-gray-400"
-                                                }`}>
+                                                <div
+                                                    className={`w-5 h-5 rounded border flex items-center justify-center mt-0.5 flex-shrink-0 ${
+                                                        selectedServices.includes(service.id)
+                                                            ? "border-red-600 bg-red-600"
+                                                            : "border-gray-400"
+                                                    }`}>
                                                     {selectedServices.includes(service.id) && (
-                                                        <CheckCircle className="w-3 h-3 text-white" />
+                                                        <CheckCircle className="w-3 h-3 text-white"/>
                                                     )}
                                                 </div>
                                                 <div className="flex-1">
@@ -333,7 +358,7 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                                     <div className="mt-4 pt-4 border-t border-gray-200">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-medium">مجموع:</span>
-                                            <span className="text-lg font-bold text-orange-600">
+                                            <span className="text-lg font-bold text-red-800">
                                                 {selectedServices.reduce((total, serviceId) => {
                                                     const service = services.find(s => s.id === serviceId);
                                                     return total + (service?.price || 0);
@@ -342,7 +367,7 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                                         </div>
                                         <Button
                                             onClick={handlePayment}
-                                            className="w-full bg-orange-500 hover:bg-orange-600"
+                                            className="w-full bg-red-600 hover:bg-red-800"
                                         >
                                             پرداخت و دریافت اطلاعات تماس
                                         </Button>
@@ -351,21 +376,20 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                             </CardContent>
                         </Card>
 
-
-
                         {/* Contact Information */}
                         {showContactInfo && (
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
-                                        <Phone className="w-5 h-5 text-orange-500" />
+                                        <Phone className="w-5 h-5 text-red-600"/>
                                         اطلاعات تماس
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                            <Phone className="w-5 h-5 text-orange-500" />
+                                        <div
+                                            className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                            <Phone className="w-5 h-5 text-red-600"/>
                                         </div>
                                         <div>
                                             <div className="text-sm text-gray-500">شماره تماس</div>
@@ -374,8 +398,9 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                                     </div>
 
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                            <Mail className="w-5 h-5 text-orange-500" />
+                                        <div
+                                            className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                            <Mail className="w-5 h-5 text-red-600"/>
                                         </div>
                                         <div>
                                             <div className="text-sm text-gray-500">شماره همراه</div>
@@ -384,8 +409,9 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                                     </div>
 
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                            <MapPin className="w-5 h-5 text-orange-500" />
+                                        <div
+                                            className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                            <MapPin className="w-5 h-5 text-red-600"/>
                                         </div>
                                         <div>
                                             <div className="text-sm text-gray-500">آدرس دفتر</div>
@@ -400,14 +426,32 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                     {/* Sidebar */}
                     <div className="space-y-6">
                         {/* Stats Card */}
+                        {/* Stats Card */}
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <Eye className="w-5 h-5 text-orange-500" />
+                                    <Eye className="w-5 h-5 text-red-600" />
                                     آمار پروفایل
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <div className="text-gray-600">وضعیت</div>
+                                    <div className="font-medium flex items-center gap-1">
+                                        {lawyer.isOnline ? (
+                                            <>
+                                                <Wifi className="w-4 h-4 text-green-500" />
+                                                <span className="text-green-500">آنلاین</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <WifiOff className="w-4 h-4 text-gray-500" />
+                                                <span className="text-gray-500">آفلاین</span>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
                                 <div className="flex justify-between items-center">
                                     <div className="text-gray-600">تعداد بازدید</div>
                                     <div className="font-medium flex items-center gap-1">
@@ -434,28 +478,14 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                             </CardContent>
                         </Card>
 
+
+                        {/* Consultation Card - برای دسکتاپ */}
                         {/* Consultation Card - برای دسکتاپ */}
                         <Card className="hidden lg:block">
-                            <CardHeader>
-                                <CardTitle className="text-orange-700">درخواست مشاوره</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    {consultationOptions.map(option => (
-                                        <div key={option.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-                                            <span className="font-medium">{option.name}</span>
-                                            <span className="text-sm font-medium">{option.price.toLocaleString()} تومان</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <Button
-                                    onClick={handleConsultationRequest}
-                                    className="w-full bg-orange-500 hover:bg-orange-600 flex items-center gap-2"
-                                >
-                                    <MessageCircle className="w-4 h-4" />
-                                    درخواست مشاوره
-                                </Button>
-                            </CardContent>
+                            <ConsultationPricingTabs
+                                lawyer={lawyer}
+                                onConsultationRequest={handleConsultationRequest}
+                            />
                         </Card>
                     </div>
                 </div>
@@ -471,50 +501,38 @@ export default function LawyerDetailPage({ params }: LawyerDetailPageProps) {
                         />
                     </div>
                 )}
+
                 {/* Reviews and Q&A - تمام عرض */}
-                <Card className="lg:col-span-3 mt-4 p-4">
+                <Card className="lg:col-span-3 mt-4 p-4 sm:p-6">
                     <Tabs defaultValue="reviews" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="reviews">نظرات کاربران</TabsTrigger>
-                            <TabsTrigger value="qa">سوالات و پاسخ‌ها</TabsTrigger>
+                        <TabsList className="grid grid-cols-3 w-full gap-2 p-1 sm:p-0 mb-4 sm:mb-6">
+                            <TabsTrigger
+                                value="reviews"
+                                className="w-full flex justify-center whitespace-nowrap text-sm sm:text-base px-3 py-2 data-[state=active]:bg-red-700 data-[state=active]:text-white"
+                            >
+                                نظرات
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="qa"
+                                className="w-full flex justify-center whitespace-nowrap text-sm sm:text-base px-3 py-2 data-[state=active]:bg-red-700 data-[state=active]:text-white"
+                            >
+                                سوالات
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="direct-question"
+                                className="w-full flex justify-center whitespace-nowrap text-sm sm:text-base px-3 py-2 data-[state=active]:bg-red-700 data-[state=active]:text-white"
+                            >
+                                پرسیدن سوال
+                            </TabsTrigger>
                         </TabsList>
-                        <TabsContent value="reviews" className="space-y-4">
-                            {reviews?.map(review => (
-                                <div key={review.id} className="border-b pb-4">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="flex">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} />
-                                            ))}
-                                        </div>
-                                        <span className="font-medium">{review.userName}</span>
-                                        <span className="text-sm text-gray-500">{new Date(review.createdAt).toLocaleDateString('fa-IR')}</span>
-                                    </div>
-                                    <p className="text-gray-700">{review.comment}</p>
-                                </div>
-                            ))}
-                            {(!reviews || reviews.length === 0) && (
-                                <p className="text-gray-500 text-center py-4">هنوز نظری ثبت نشده است</p>
-                            )}
+                        <TabsContent value="reviews" className="mt-4 sm:mt-6">
+                            <ReviewsSection reviews={reviews || []} />
                         </TabsContent>
-                        <TabsContent value="qa" className="space-y-4">
-                            {qaPairs?.map(qa => (
-                                <div key={qa.id} className="border-b pb-4">
-                                    <div className="mb-2">
-                                        <div className="font-medium text-gray-900 mb-1">سوال از {qa.askedBy}</div>
-                                        <p className="text-gray-700">{qa.question}</p>
-                                        <div className="text-sm text-gray-500">{new Date(qa.askedAt).toLocaleDateString('fa-IR')}</div>
-                                    </div>
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <div className="font-medium text-gray-900 mb-1">پاسخ وکیل</div>
-                                        <p className="text-gray-700">{qa.answer}</p>
-                                        <div className="text-sm text-gray-500">{new Date(qa.answeredAt).toLocaleDateString('fa-IR')}</div>
-                                    </div>
-                                </div>
-                            ))}
-                            {(!qaPairs || qaPairs.length === 0) && (
-                                <p className="text-gray-500 text-center py-4">هنوز سوالی ثبت نشده است</p>
-                            )}
+                        <TabsContent value="qa" className="mt-4 sm:mt-6">
+                            <QandASection qaPairs={qaPairs || []} />
+                        </TabsContent>
+                        <TabsContent value="direct-question" className="mt-4 sm:mt-6">
+                            <DirectQuestionSection lawyer={lawyer} />
                         </TabsContent>
                     </Tabs>
                 </Card>

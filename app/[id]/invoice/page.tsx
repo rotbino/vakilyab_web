@@ -1,4 +1,3 @@
-// app/[id]/invoice/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,15 +5,16 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/radix/card";
 import { Button } from "@/components/radix/button";
 import { Badge } from "@/components/radix/badge";
-import { CheckCircle, Download, Home, User, Calendar, Clock, CreditCard } from "lucide-react";
+import { CheckCircle, Download, Home, User, Calendar, Clock, CreditCard, Phone, Video } from "lucide-react";
 import { useAuth } from "@/lib/api/useApi";
-import {toast,} from "@/lib/hooks/app-toast";
+import { toast } from "@/lib/hooks/app-toast";
 
 interface BookingData {
     lawyerId: string;
     lawyerName: string;
     consultationId: string;
     consultationName: string;
+    consultationType: 'in-person' | 'phone' | 'video';
     consultationPrice: number;
     timeSlot: {
         id: string;
@@ -28,17 +28,12 @@ interface BookingData {
 
 export default function ConsultationInvoicePage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
-    // استفاده از React.use برای unwrapping پارامترها
     const { id: lawyerId } = React.use(params);
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
     const [invoiceNumber, setInvoiceNumber] = useState<string>("");
     const { user } = useAuth();
 
-
-
     useEffect(() => {
-        // در معماری جدید، داده‌ها باید از state یا React Query خوانده شوند
-        // برای سادگی، هنوز از localStorage استفاده می‌کنیم، اما در آینده باید این را تغییر دهید
         const storedData = localStorage.getItem('consultationBooking');
         if (storedData) {
             const data = JSON.parse(storedData);
@@ -55,8 +50,7 @@ export default function ConsultationInvoicePage({ params }: { params: Promise<{ 
     }, [lawyerId, router]);
 
     const handleDownload = () => {
-        // در یک برنامه واقعی، اینجا فاکتور دانلود می‌شود
-        toast.warning( "درخواست نامعتبر",  "درخواست شما نامعتبر است.",);
+        toast.warning("درخواست نامعتبر", "درخواست شما نامعتبر است.");
     };
 
     const handleBackToHome = () => {
@@ -86,6 +80,33 @@ export default function ConsultationInvoicePage({ params }: { params: Promise<{ 
             minute: '2-digit'
         };
         return new Intl.DateTimeFormat('fa-IR', options).format(now);
+    };
+
+    const getConsultationTypeLabel = (type: string) => {
+        switch (type) {
+            case 'in-person': return 'حضوری';
+            case 'phone': return 'تلفنی';
+            case 'video': return 'تصویری';
+            default: return type;
+        }
+    };
+
+    const getConsultationTypeColor = (type: string) => {
+        switch (type) {
+            case 'in-person': return 'bg-blue-100 text-blue-800';
+            case 'phone': return 'bg-green-100 text-green-800';
+            case 'video': return 'bg-purple-100 text-purple-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getConsultationTypeIcon = (type: string) => {
+        switch (type) {
+            case 'in-person': return <User className="w-4 h-4" />;
+            case 'phone': return <Phone className="w-4 h-4" />;
+            case 'video': return <Video className="w-4 h-4" />;
+            default: return <Clock className="w-4 h-4" />;
+        }
     };
 
     if (!bookingData) {
@@ -178,21 +199,44 @@ export default function ConsultationInvoicePage({ params }: { params: Promise<{ 
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                            {getConsultationTypeIcon(bookingData.consultationType)}
+                                        </div>
+                                        <div>
+                                            <div className="font-medium">نوع مشاوره</div>
+                                            <Badge className={getConsultationTypeColor(bookingData.consultationType)}>
+                                                {getConsultationTypeLabel(bookingData.consultationType)}
+                                            </Badge>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                                             <Clock className="w-4 h-4 text-orange-500" />
                                         </div>
-                                        <span>{bookingData.consultationName}</span>
+                                        <div>
+                                            <div className="font-medium">مدت زمان</div>
+                                            <div>{bookingData.consultationName}</div>
+                                        </div>
                                     </div>
+
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                                             <Calendar className="w-4 h-4 text-orange-500" />
                                         </div>
-                                        <span>{formatDate(bookingData.timeSlot.date)}</span>
+                                        <div>
+                                            <div className="font-medium">تاریخ</div>
+                                            <div>{formatDate(bookingData.timeSlot.date)}</div>
+                                        </div>
                                     </div>
+
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                                             <Clock className="w-4 h-4 text-orange-500" />
                                         </div>
-                                        <span>{bookingData.timeSlot.startTime} - {bookingData.timeSlot.endTime}</span>
+                                        <div>
+                                            <div className="font-medium">ساعت</div>
+                                            <div>{bookingData.timeSlot.startTime} - {bookingData.timeSlot.endTime}</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

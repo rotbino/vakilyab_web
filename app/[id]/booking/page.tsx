@@ -1,15 +1,15 @@
-// app/[id]/booking/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/radix/card";
 import { Badge } from "@/components/radix/badge";
-import { ArrowRight, ArrowLeft, Clock, User, Calendar } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, User, Calendar, Phone, Video } from "lucide-react";
 import TimeSlotSelector from "@/app/lawyer-dashboard/TimeSlotSelector";
 import { useTimeSlots, useConsultationOptions, useCreateBooking, useAuth, useLawyer } from "@/lib/api/useApi";
 import { formatDate } from "@/lib/utils";
 import { Button } from '@/components/radix/button';
+
 interface TimeSlot {
     id: string;
     date: string;
@@ -21,7 +21,9 @@ interface TimeSlot {
 interface ConsultationOption {
     id: string;
     name: string;
-    price: number;
+    inPersonPrice: number;
+    phonePrice: number;
+    videoPrice: number;
 }
 
 export default function ConsultationBookingPage({ params }: { params: { id: string } }) {
@@ -31,6 +33,7 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
     const consultationId = searchParams.get("consultation") || "";
 
     const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null);
+    const [selectedConsultationType, setSelectedConsultationType] = useState<'in-person' | 'phone' | 'video'>('in-person');
 
     // Fetch data using hooks
     const { data: lawyer, isLoading: lawyerLoading } = useLawyer(lawyerId);
@@ -43,25 +46,26 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
 
     // Redirect if lawyer or consultation not found
     useEffect(() => {
-        if (!lawyerLoading && !lawyer) {
-            router.push("/");
-        }
-    }, [lawyer, lawyerLoading, router]);
-
-    useEffect(() => {
-        if (consultationOptions.length > 0 && !selectedConsultation) {
+        if (consultationOptions.length > 0 && consultationId && !selectedConsultation) {
             router.push(`/${lawyerId}`);
         }
-    }, [selectedConsultation, consultationOptions, lawyerId, router]);
+    }, [selectedConsultation, consultationOptions, consultationId, lawyerId, router]);
 
     // Check authentication
     useEffect(() => {
         if (!isAuthenticated && consultationOptions.length > 0) {
-            // Save current path for redirect after login
             localStorage.setItem('redirectAfterLogin', window.location.pathname);
             router.push('/login');
         }
     }, [isAuthenticated, consultationOptions, router]);
+
+    // بازیابی نوع مشاوره از localStorage
+    useEffect(() => {
+        const savedType = localStorage.getItem('selectedConsultationType');
+        if (savedType) {
+            setSelectedConsultationType(savedType as 'in-person' | 'phone' | 'video');
+        }
+    }, []);
 
     const handleTimeSlotSelect = (timeSlot: TimeSlot) => {
         setSelectedTimeSlot(timeSlot);
@@ -80,12 +84,18 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
         }
 
         try {
+            // محاسبه قیمت بر اساس نوع مشاوره
+            const consultationPrice = selectedConsultationType === 'in-person' ? selectedConsultation?.inPersonPrice :
+                selectedConsultationType === 'phone' ? selectedConsultation?.phonePrice :
+                    selectedConsultation?.videoPrice;
+
             const bookingData = {
                 lawyerId,
                 lawyerName: lawyer?.name + " " + lawyer?.lastName,
                 consultationId,
                 consultationName: selectedConsultation?.name,
-                consultationPrice: selectedConsultation?.price,
+                consultationType: selectedConsultationType,
+                consultationPrice: consultationPrice || 0,
                 timeSlot: selectedTimeSlot,
                 userId: user?.id,
                 userName: user?.name + " " + user?.lastName
@@ -100,7 +110,7 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
     };
 
     const handleBack = () => {
-        router.push(`/${lawyerId}`);
+        router.push(`/${lawyerId}/consultation-options?consultation=${consultationId}`);
     };
 
     // Loading states
@@ -127,6 +137,29 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
             </div>
         );
     }
+
+    // محاسبه قیمت بر اساس نوع مشاوره
+    const consultationPrice = selectedConsultationType === 'in-person' ? selectedConsultation.inPersonPrice :
+        selectedConsultationType === 'phone' ? selectedConsultation.phonePrice :
+            selectedConsultation.videoPrice;
+
+    const getConsultationTypeLabel = (type: string) => {
+        switch (type) {
+            case 'in-person': return 'حضوری';
+            case 'phone': return 'تلفنی';
+            case 'video': return 'تصویری';
+            default: return type;
+        }
+    };
+
+    const getConsultationTypeColor = (type: string) => {
+        switch (type) {
+            case 'in-person': return 'bg-blue-100 text-blue-800';
+            case 'phone': return 'bg-green-100 text-green-800';
+            case 'video': return 'bg-purple-100 text-purple-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
@@ -180,6 +213,13 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex justify-between items-center">
+                                    <span className="text-gray-600">نوع مشاوره</span>
+                                    <Badge className={getConsultationTypeColor(selectedConsultationType)}>
+                                        {getConsultationTypeLabel(selectedConsultationType)}
+                                    </Badge>
+                                </div>
+
+                                <div className="flex justify-between items-center">
                                     <span className="text-gray-600">مدت زمان</span>
                                     <Badge className="bg-orange-100 text-orange-800">
                                         {selectedConsultation.name}
@@ -189,7 +229,7 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">هزینه</span>
                                     <span className="font-bold">
-                                        {selectedConsultation.price.toLocaleString()} تومان
+                                        {consultationPrice.toLocaleString()} تومان
                                     </span>
                                 </div>
 

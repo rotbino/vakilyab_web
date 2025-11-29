@@ -4,22 +4,18 @@ import React, {useEffect, useState} from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Filter, Briefcase, Crown } from 'lucide-react';
 import { Button } from '@/components/radix/button';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/radix/card';
-import LawyerCard from '@/app/home/LawyerCard';
-
 import MobileFooter from '@/app/home/MobileFooter';
 import DesktopNav from '@/app/home/DesktopNav';
 import MobileNav from '@/app/home/MobileNav';
 import ProcessStepper from '@/app/home/ProcessStepper';
-
 import LawyerRegistrationCTA from '@/app/home/LawyerRegistrationCTA';
 import BenefitsSection from '@/app/home/BenefitsSection';
 import Link from "next/link";
 import { useLawyers } from "@/lib/api/useApi";
 import { provinces } from "@/lib/api/mockData";
 import {Input} from "@/components/radix/input";
-
+import LawyersList from "@/app/lawyers/LawyersList";
 
 export default function MainPage() {
   const router = useRouter();
@@ -146,49 +142,29 @@ export default function MainPage() {
           </div>
 
           {/* Lawyers List */}
-          <div className="my-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">لیست وکلا</h2>
-              <Link href="/lawyers">
-                <Button variant="outline" className="text-[#ca2a30] border-[#ca2a30]">
-                  مشاهده همه
-                </Button>
-              </Link>
-            </div>
-
-            {/* Lawyers Grid - Desktop */}
-            <div className="md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {lawyers?.slice(0, 6).map(lawyer => (
-                  <LawyerCard key={lawyer.id} lawyer={lawyer}  />
-              ))}
-            </div>
-
-
-          </div>
+            <LawyersList
+                lawyers={lawyers || []}
+                title="لیست وکلا"
+                showViewAllButton={true}
+                limit={6}
+                showOnlineFilter={true}
+            />
 
           {/* Lawyer Registration CTA */}
           <LawyerRegistrationCTA />
 
           {/* Recently Registered Lawyers */}
-          <div className="my-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">وکلای جدید</h2>
-              <Link href="/lawyers">
-                <Button variant="outline" className="text-[#ca2a30] border-[#ca2a30]">
-                  مشاهده همه
-                </Button>
-              </Link>
-            </div>
-
-            {/* Lawyers Grid - Desktop */}
-            <div className="md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {recentLawyers.map(lawyer => (
-                  <LawyerCard key={lawyer.id} lawyer={lawyer} />
-              ))}
-            </div>
+            {/* Lawyers List */}
 
 
-          </div>
+            {/* Recently Registered Lawyers */}
+            <LawyersList
+                lawyers={recentLawyers}
+                title="وکلای جدید"
+                showViewAllButton={true}
+                viewAllLink="/lawyers?filter=new"
+                showOnlineFilter={true}
+            />
 
           {/* Process Steps */}
           <ProcessStepper currentStep={1} />

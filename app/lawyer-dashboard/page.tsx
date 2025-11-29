@@ -15,12 +15,13 @@ import {
     ArrowRight,
     CheckCircle,
     AlertCircle,
-    X, MessageSquare
+    X, MessageSquare, Settings
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth, useTimeSlots } from "@/lib/api/useApi";
+import {useAuth, useConsultationPricing, useTimeSlots} from "@/lib/api/useApi";
 import SubscriptionBanner from "@/app/lawyer-dashboard/SubscriptionBanner";
 import { useLawyerQuestions } from "@/lib/api/useApi";
+import ConsultationPricingManager from "@/app/lawyer-dashboard/ConsultationPricingManager";
 export default function LawyerDashboardPage() {
     const { user: currentUser, isAuthenticated } = useAuth();
     const { data: timeSlots = [] } = useTimeSlots(currentUser?.id || '');
@@ -336,79 +337,7 @@ export default function LawyerDashboardPage() {
         </Card>
     );
 
-    // کامپوننت ابزارهای حرفه‌ای
-    const ProfessionalTools = () => (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="w-5 h-5 text-orange-500" />
-                    ابزارهای حرفه‌ای
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <Link href="/lawyer-dashboard/schedule">
-                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <Clock className="w-5 h-5 text-orange-500" />
-                            </div>
-                            <div>
-                                <div className="font-medium">مدیریت زمان‌بندی</div>
-                                <div className="text-sm text-gray-600">
-                                    {availableTimeSlots} زمان خالی
-                                </div>
-                            </div>
-                        </div>
-                        <ArrowRight className="w-5 h-5 text-gray-400" />
-                    </div>
-                </Link>
 
-                <Link href="/lawyer-dashboard/my-services">
-                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <Briefcase className="w-5 h-5 text-orange-500" />
-                            </div>
-                            <div>
-                                <div className="font-medium">خدمات من</div>
-                                <div className="text-sm text-gray-600">
-                                    مدیریت خدمات ارائه شده
-                                </div>
-                            </div>
-                        </div>
-                        <ArrowRight className="w-5 h-5 text-gray-400" />
-                    </div>
-                </Link>
-
-                <Link href="/lawyer-dashboard/reports">
-                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <BarChart3 className="w-5 h-5 text-orange-500" />
-                            </div>
-                            <div>
-                                <div className="font-medium">درآمد و گزارشات</div>
-                                <div className="text-sm text-gray-600">
-                                    {totalIncome.toLocaleString()} تومان درآمد
-                                </div>
-                            </div>
-                        </div>
-                        <ArrowRight className="w-5 h-5 text-gray-400" />
-                    </div>
-                </Link>
-            </CardContent>
-        </Card>
-    );
-
-// اضافه کردن هوک‌های لازم
-
-
-// اضافه کردن کامپوننت ویجت سوالات
-    // app/lawyer-dashboard/LawyerDashboardPage.tsx
-
-/// app/lawyer-dashboard/LawyerDashboardPage.tsx
-
-// بهبود کامپوننت QuestionsWidget
     const QuestionsWidget = () => {
         const { data: pendingQuestions = [] } = useLawyerQuestions({ status: 'pending' });
 
@@ -473,9 +402,109 @@ export default function LawyerDashboardPage() {
             </Card>
         );
     };
+
+    const ProfessionalTools = ({}) => (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-orange-500" />
+                    ابزارهای حرفه‌ای
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Link href="/lawyer-dashboard/schedule">
+                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Clock className="w-5 h-5 text-orange-500" />
+                            </div>
+                            <div>
+                                <div className="font-medium">مدیریت زمان‌بندی</div>
+                                <div className="text-sm text-gray-600">
+                                    {availableTimeSlots} زمان خالی
+                                </div>
+                            </div>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-gray-400" />
+                    </div>
+                </Link>
+
+                <Link href="/lawyer-dashboard/my-services">
+                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Briefcase className="w-5 h-5 text-orange-500" />
+                            </div>
+                            <div>
+                                <div className="font-medium">خدمات من</div>
+                                <div className="text-sm text-gray-600">
+                                    مدیریت خدمات ارائه شده
+                                </div>
+                            </div>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-gray-400" />
+                    </div>
+                </Link>
+
+                <Link href="/lawyer-dashboard/reports">
+                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <BarChart3 className="w-5 h-5 text-orange-500" />
+                            </div>
+                            <div>
+                                <div className="font-medium">درآمد و گزارشات</div>
+                                <div className="text-sm text-gray-600">
+                                    {totalIncome.toLocaleString()} تومان درآمد
+                                </div>
+                            </div>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-gray-400" />
+                    </div>
+                </Link>
+            </CardContent>
+        </Card>
+    );
+
+
+
+    const PricingWarningBanner = () => {
+        const { user: currentUser } = useAuth();
+        const { data: pricing = [] } = useConsultationPricing(currentUser?.id);
+
+        const hasActivePricing = pricing.some(p => p.isActive);
+
+        if (!hasActivePricing) {
+            return (
+                <Card className="border-orange-200 bg-orange-50">
+                    <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Settings className="w-5 h-5 text-orange-500" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="font-medium text-orange-800">تنظیم قیمت‌های مشاوره</h3>
+                                <p className="text-sm text-orange-700">
+                                    شما هنوز قیمت‌های مشاوره خود را تنظیم نکرده‌اید. لطفاً از بخش ابزارهای حرفه‌ای، قیمت‌ها را تنظیم کنید تا کاربران بتوانند مشاوره رزرو کنند، در غیر این صورت از قیمتهای پیشفرض استفاده می شود.
+                                </p>
+                            </div>
+                            <Link href="/lawyer-dashboard/consultation-pricing">
+                                <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
+                                    تنظیم قیمت‌ها
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+            );
+        }
+
+        return null;
+    };
     return (
         <div className="space-y-6">
             <SubscriptionBanner />
+            <PricingWarningBanner />
             {/* بخش خوشامدگویی */}
             <WelcomeSection/>
 
@@ -488,6 +517,7 @@ export default function LawyerDashboardPage() {
                 <RecentServices/>
             </div>
             <QuestionsWidget />
+            <ConsultationPricingManager />
             {/* بخش خدمات برای وکلا */}
             <LawyerServicesSection />
             {/* بخش ابزارهای حرفه‌ای */}
@@ -495,3 +525,8 @@ export default function LawyerDashboardPage() {
         </div>
     );
 }
+
+
+
+
+
